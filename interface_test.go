@@ -1,14 +1,10 @@
-package protobuf
+package protobuf //nolint:testpackage
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
-
-type testInterface interface {
-	String() string
-}
 
 type testStructA struct{}
 

@@ -1,8 +1,10 @@
-package protobuf
+package protobuf_test
 
 import (
 	"encoding/hex"
 	"fmt"
+
+	"github.com/DmitriyMV/protobuf"
 )
 
 type Test2 struct {
@@ -13,9 +15,8 @@ type Test2 struct {
 // This example encodes the Test2 message illustrating strings
 // in the Protocol Buffers encoding specification.
 func ExampleEncode_test2() {
-
 	t := Test2{B: "testing"}
-	buf, _ := Encode(&t)
+	buf := try(protobuf.Encode(&t))
 	fmt.Print(hex.Dump(buf))
 
 	// Output:

@@ -1,12 +1,15 @@
-package protobuf
+package protobuf_test
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/DmitriyMV/protobuf"
 )
 
+//nolint:govet
 type TestNestedOuter struct {
 	A int32
 	*TestNestedInner
@@ -28,15 +31,17 @@ func TestEncodeNested(t *testing.T) {
 		},
 	}
 	v := reflect.ValueOf(s).Elem()
-	actual := ProtoFields(v.Type())
+
+	actual := protobuf.ProtoFields(v.Type())
 	for _, f := range actual {
 		f.Field = reflect.StructField{}
 	}
-	expected := []*ProtoField{
-		{1, TagNone, "", []int{0}, reflect.StructField{}},
-		{2, TagNone, "", []int{1, 0}, reflect.StructField{}},
-		{10, TagNone, "", []int{1, 1}, reflect.StructField{}},
-		{11, TagNone, "renamed", []int{1, 2}, reflect.StructField{}},
+
+	expected := []*protobuf.ProtoField{
+		{1, "", []int{0}, reflect.StructField{}},
+		{2, "", []int{1, 0}, reflect.StructField{}},
+		{10, "", []int{1, 1}, reflect.StructField{}},
+		{11, "renamed", []int{1, 2}, reflect.StructField{}},
 	}
 	assert.Equal(t, expected, actual)
 	assert.Equal(t, v.FieldByIndex(actual[0].Index).Int(), int64(13))
@@ -53,6 +58,6 @@ type TestDuplicateID struct {
 func TestDuplicateIDNotAllowed(t *testing.T) {
 	assert.Panics(t, func() {
 		v := reflect.TypeOf(&TestDuplicateID{})
-		ProtoFields(v)
+		protobuf.ProtoFields(v)
 	})
 }

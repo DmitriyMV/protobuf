@@ -1,8 +1,10 @@
-package protobuf
+package protobuf_test
 
 import (
 	"encoding/hex"
 	"fmt"
+
+	"github.com/DmitriyMV/protobuf"
 )
 
 type Test1 struct {
@@ -13,9 +15,8 @@ type Test1 struct {
 // the Protocol Buffers encoding specification:
 // https://developers.google.com/protocol-buffers/docs/encoding
 func ExampleEncode_test1() {
-
 	t := Test1{150}
-	buf, _ := Encode(&t)
+	buf := try(protobuf.Encode(&t))
 	fmt.Print(hex.Dump(buf))
 
 	// Output:

@@ -1,8 +1,13 @@
-package protobuf
+package protobuf_test
 
 import (
+	"encoding/hex"
 	"testing"
+
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/DmitriyMV/protobuf"
 )
 
 type Private struct {
@@ -18,20 +23,21 @@ type Empty struct {
 }
 
 func TestPrivate(t *testing.T) {
-	s := Private{37}
-	u := Public{37}
+	private := Private{37}
+	public := Public{37}
 	str := "b"
-	e := Empty{&str}
+	empty := Empty{&str}
 
-	bufS, errS := Encode(&s)
-	bufU, errU := Encode(&u)
-	bufE, errE := Encode(&e)
+	bufPrivate, errS := protobuf.Encode(&private)
+	require.Error(t, errS)
+	bufPublic := must(protobuf.Encode(&public))(t)
+	bufEmpty := must(protobuf.Encode(&empty))(t)
 
-	t.Log(bufS, errS)
-	t.Log(bufU, errU)
-	t.Log(bufE, errE)
+	t.Log(hex.Dump(bufPrivate))
+	t.Log(hex.Dump(bufPublic))
+	t.Log(hex.Dump(bufEmpty))
 
-	assert.Equal(t, []byte(nil), bufS)
-	assert.Equal(t, []byte{0x8, 0x4a}, bufU)
-	assert.Equal(t, []byte{0xa, 0x1, 0x62}, bufE)
+	assert.Equal(t, []byte(nil), bufPrivate)
+	assert.Equal(t, []byte{0x8, 0x25}, bufPublic)
+	assert.Equal(t, []byte{0xa, 0x1, 0x62}, bufEmpty)
 }

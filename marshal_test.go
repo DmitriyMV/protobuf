@@ -1,22 +1,24 @@
-package protobuf
+package protobuf_test
 
 import (
-	"fmt"
+	"encoding/hex"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-)
+	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/encoding/protowire"
 
-type ValueInt interface {
-	Print() string
-}
+	"github.com/DmitriyMV/protobuf"
+)
 
 type A struct {
 	Value int
 }
 
 func (a *A) MarshalBinary() ([]byte, error) {
-	return []byte(fmt.Sprintf("%d", a.Value)), nil
+	res := protowire.AppendTag(nil, 1, protowire.VarintType)
+
+	return protowire.AppendVarint(res, uint64(a.Value)), nil
 }
 
 func (a *A) Print() string {
@@ -29,21 +31,21 @@ type B struct {
 }
 
 func TestMarshal(t *testing.T) {
-	var a A = A{0}
-	var b B = B{a, 1}
+	a := A{-149}
+	b := B{a, 300}
 
-	bufA, _ := Encode(&a)
-	bufB, _ := Encode(&b)
+	bufA := must(protobuf.Encode(&a))(t)
+	bufB := must(protobuf.Encode(&b))(t)
 
-	t.Log(bufA)
-	t.Log(bufB)
+	t.Logf("%s", hex.Dump(bufA))
+	t.Logf("%s", hex.Dump(bufB))
 
 	testA := A{}
 	testB := B{}
 
-	Decode(bufA, &testA)
-	Decode(bufB, &testB)
+	require.NoError(t, protobuf.Decode(bufA, &testA))
+	require.NoError(t, protobuf.Decode(bufB, &testB))
 
-	assert.Equal(t, testA, a)
-	assert.Equal(t, testB, b)
+	assert.Equal(t, a, testA)
+	assert.Equal(t, b, testB)
 }

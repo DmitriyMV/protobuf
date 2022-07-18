@@ -1,4 +1,4 @@
-package protobuf
+package protobuf_test
 
 import (
 	"bytes"
@@ -6,12 +6,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	// for more human friendly hex dump output (first ... last 3 bytes):
-	// goprotobuf "github.com/golang/protobuf/proto"
+
+	"github.com/DmitriyMV/protobuf"
 )
 
+//nolint:govet
 type Inner struct {
-	Id   int32
+	ID   int32
 	Name string
 }
 
@@ -36,7 +37,7 @@ func TestMapFieldEncode(t *testing.T) {
 		},
 	}
 
-	b, err := Encode(m)
+	b, err := protobuf.Encode(m)
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
@@ -49,28 +50,34 @@ func TestMapFieldEncode(t *testing.T) {
 	}
 
 	ok := false
+
 	for i := range parts {
 		for j := range parts {
 			if j == i {
 				continue
 			}
+
 			for k := range parts {
 				if k == i || k == j {
 					continue
 				}
+
 				try := parts[i] + parts[j] + parts[k]
+
 				if bytes.Equal(b, []byte(try)) {
 					ok = true
+
 					break
 				}
 			}
 		}
 	}
+
 	if !ok {
 		t.Fatalf("Incorrect Encoding output.\n got %q\nwant %q (or a permutation of that)", b, parts[0]+parts[1]+parts[2])
 	}
-	t.Logf("FYI b: %q", b)
 
+	t.Logf("FYI b: %q", b)
 }
 
 func TestMapFieldRoundTrips(t *testing.T) {
@@ -82,7 +89,7 @@ func TestMapFieldRoundTrips(t *testing.T) {
 			8: "Dave",
 		},
 		MsgMapping: map[int64]*FloatingPoint{
-			0x7001: &FloatingPoint{F: &Float},
+			0x7001: {F: &Float},
 		},
 		ByteMapping: map[bool][]byte{
 			false: []byte("that's not right!"),
@@ -93,20 +100,23 @@ func TestMapFieldRoundTrips(t *testing.T) {
 			"other key": "other value",
 		},
 		StructMapping: map[string]*Inner{
-			"first":  &Inner{Id: 1, Name: "one"},
-			"second": &Inner{Id: 5, Name: "two"},
+			"first":  {ID: 1, Name: "one"},
+			"second": {ID: 5, Name: "two"},
 		},
 	}
-	b, err := Encode(m)
+
+	b, err := protobuf.Encode(m)
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
+
 	t.Logf("FYI b: %q", b)
 
 	m2 := new(MessageWithMap)
-	if err := Decode(b, m2); err != nil {
+	if err := protobuf.Decode(b, m2); err != nil {
 		t.Fatalf("Decode: %v", err)
 	}
+
 	for _, pair := range [][2]interface{}{
 		{m.NameMapping, m2.NameMapping},
 		{m.MsgMapping, m2.MsgMapping},
@@ -126,7 +136,8 @@ func TestMapFieldWithNil(t *testing.T) {
 			1: nil,
 		},
 	}
-	b, err := Encode(m)
+
+	b, err := protobuf.Encode(m)
 	if err == nil {
 		t.Fatalf("Marshal of bad map should have failed, got these bytes: %v", b)
 	}
@@ -142,6 +153,6 @@ func TestMapWrongSliceValue(t *testing.T) {
 	w.Map["hello"] = []uint32{1, 2, 3}
 	w.Map["world"] = []uint32{4, 5, 6}
 
-	_, err := Encode(w)
+	_, err := protobuf.Encode(w)
 	assert.NotNil(t, err)
 }

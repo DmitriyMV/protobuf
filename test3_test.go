@@ -1,8 +1,10 @@
-package protobuf
+package protobuf_test
 
 import (
 	"encoding/hex"
 	"fmt"
+
+	"github.com/DmitriyMV/protobuf"
 )
 
 type Test3 struct {
@@ -14,11 +16,18 @@ type Test3 struct {
 // This example encodes the Test3 message illustrating embedded messages
 // in the Protocol Buffers encoding specification.
 func ExampleEncode_test3() {
-
 	t := Test3{C: Test1{150}}
-	buf, _ := Encode(&t)
+	buf := try(protobuf.Encode(&t))
 	fmt.Print(hex.Dump(buf))
 
 	// Output:
 	// 00000000  1a 03 08 96 01                                    |.....|
+}
+
+func try[T any](t T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+
+	return t
 }
